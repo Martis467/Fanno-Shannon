@@ -11,13 +11,13 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<TabPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="318.0" prefWidth="510.0" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/9" xmlns:fx="http://javafx.com/fxml/1">
+<TabPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="318.0" prefWidth="510.0" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/9" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.gui.MainUI">
   <tabs>
     <Tab text="Compresion">
       <content>
         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                    <children>
-                       <Button layoutX="14.0" layoutY="64.0" mnemonicParsing="false" text="Select file">
+                       <Button layoutX="14.0" layoutY="64.0" mnemonicParsing="false" onAction="#selectFileForCompression" text="Select file">
                            <opaqueInsets>
                                <Insets bottom="10.0" left="10.0" right="10.0" />
                            </opaqueInsets>
@@ -28,11 +28,11 @@
                            </font>
                        </Text>
                        <TextField layoutX="91.0" layoutY="64.0" prefHeight="25.0" prefWidth="398.0" />
-                       <Slider blockIncrement="5.0" layoutX="91.0" layoutY="104.0" majorTickUnit="2.0" max="24.0" min="2.0" minorTickCount="1" prefHeight="38.0" prefWidth="361.0" showTickLabels="true" showTickMarks="true" snapToTicks="true" />
+                       <Slider fx:id="slider" blockIncrement="5.0" layoutX="91.0" layoutY="104.0" majorTickUnit="2.0" max="24.0" min="2.0" minorTickCount="1" prefHeight="38.0" prefWidth="361.0" showTickLabels="true" showTickMarks="true" snapToTicks="true" />
                        <Text layoutX="14.0" layoutY="115.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Word Length" />
-                       <TextField layoutX="462.0" layoutY="98.0" prefHeight="25.0" prefWidth="27.0" />
-                       <ProgressBar layoutX="17.0" layoutY="168.0" prefHeight="25.0" prefWidth="477.0" progress="0.0" />
-                       <Button layoutX="430.0" layoutY="228.0" mnemonicParsing="false" prefHeight="38.0" prefWidth="64.0" text="Compres" />
+                       <TextField fx:id="sliderValue" layoutX="462.0" layoutY="98.0" prefHeight="25.0" prefWidth="27.0" />
+                       <ProgressBar fx:id="progressBar" layoutX="17.0" layoutY="168.0" prefHeight="25.0" prefWidth="477.0" progress="0.0" />
+                       <Button layoutX="430.0" layoutY="228.0" mnemonicParsing="false" onAction="#compressFile" prefHeight="38.0" prefWidth="64.0" text="Compres" />
                </children></AnchorPane>
       </content>
     </Tab>
@@ -45,7 +45,7 @@
                         <Font size="18.0" />
                      </font>
                   </Text>
-                  <Button layoutX="14.0" layoutY="59.0" mnemonicParsing="false" text="Select file">
+                  <Button layoutX="14.0" layoutY="59.0" mnemonicParsing="false" onAction="#selectFileForDecompression" text="Select file">
                      <opaqueInsets>
                         <Insets bottom="10.0" left="10.0" right="10.0" />
                      </opaqueInsets>
