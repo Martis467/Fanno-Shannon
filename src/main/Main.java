@@ -12,10 +12,10 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception{
-        URL resource = Main.class.getClassLoader().getResource("sample/sample.fxml");
+
+        URL resource = getClass().getClassLoader().getResource("UI/MainUI.fxml");
         Parent root = FXMLLoader.load(resource);
-        primaryStage.setTitle("Hello World");
-        primaryStage.setScene(new Scene(root, 300, 275));
+        primaryStage.setScene(new Scene(root));
         primaryStage.show();
     }
 
@@ -23,7 +23,5 @@ public class Main extends Application {
     public static void main(String[] args)
     {
         launch(args);
-        Encode.encode("test.txt", "encoded.txt", 8);
-
     }
 }
