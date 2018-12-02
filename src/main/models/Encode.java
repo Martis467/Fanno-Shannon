@@ -1,13 +1,8 @@
 package main.models;
 
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
 
 public class Encode {
@@ -20,50 +15,54 @@ public class Encode {
     private String fileExtension;
     private int wordLength;
     private String decodedTextRoot; //Saved first
-    private String encodedTextRoot; //Saved last
-
+    private int bufferSize = 1024;
 
     public Encode(int wordLength) {
-        this.wordLength = wordLength;
-        this.fileExtension = ".txt";
-        this.decodedTextRoot = "";
-        this.encodedTextRoot = "";
+        this(wordLength, ".txt");
     }
 
     public Encode(int wordLength, String fileExtension) {
         this.wordLength = wordLength;
         this.fileExtension = fileExtension;
         this.decodedTextRoot = "";
-        this.encodedTextRoot = "";
+        if (bufferSize % wordLength != 0)
+            bufferSize += bufferSize % wordLength;
     }
 
-    public void encode(URL filepath)
-    {
-        try {
-            byte[] fileContents = Files.readAllBytes(Paths.get(filepath.toURI()));
-
-            //Converting bits to string
-            String fileBufferStr = "";
-            for (byte b : fileContents) {
-                fileBufferStr += String.format("%8s", Integer.toBinaryString(b & 0xFF)).replace(' ', '0');
+    public void encode(URL filepath) {
+        try (FileInputStream fs = new FileInputStream(new File(filepath.toURI()));
+        ) {
+            byte[] fileBuffer = new byte[bufferSize];
+            int readBytes = 0;
+            //fill freq map iterating through whole file using buffers
+            while (-1 != (readBytes = fs.read(fileBuffer))) {
+                //convert bits to string
+                String bitString = convertBitsToBitString(fileBuffer, readBytes);
+                getFreqTable(bitString, wordLength);
+                //System.out.println(freqMap);
             }
-            System.out.println(fileBufferStr);
-
-            getFreqTable(fileBufferStr, wordLength);
-            System.out.println(freqMap);
+            fs.close();
 
             ArrayList<Map.Entry<String, Integer>> sortedFreqList = sortedByFreq();
-
             System.out.println(sortedFreqList);
             compressString(sortedFreqList);
             System.out.println(compressedResult);
-            saveEncodedFile(getFileName(filepath),fileBufferStr, wordLength);
+
+            saveEncodedFile(filepath);
+
         } catch (IOException e) {
             e.printStackTrace();
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }
+    }
 
+    private String convertBitsToBitString(byte[] byteBuffer, int size) {
+        String bitBufferStr = "";
+        for (int i = 0; i < size; ++i) {
+            bitBufferStr += String.format("%8s", Integer.toBinaryString(byteBuffer[i] & 0xFF)).replace(' ', '0');
+        }
+        return bitBufferStr;
     }
 
     private String getFileName(URL filepath) throws URISyntaxException {
@@ -75,8 +74,7 @@ public class Encode {
 
     private void getFreqTable(String buffer, int wordLen) {
         for (int i = 0; i < buffer.length(); i += wordLen) {
-            if (buffer.length() < i+wordLen)
-            {
+            if (buffer.length() < i + wordLen) {
                 decodedTextRoot = buffer.substring(i);
                 break;
             }
@@ -89,14 +87,14 @@ public class Encode {
         }
     }
 
-    private  ArrayList<Map.Entry<String, Integer>> sortedByFreq() {
+    private ArrayList<Map.Entry<String, Integer>> sortedByFreq() {
         ArrayList<Map.Entry<String, Integer>> list = new ArrayList<Map.Entry<String, Integer>>(freqMap.entrySet());
         list.sort(Map.Entry.comparingByValue());
         Collections.reverse(list);
         return list;
     }
 
-    private  void compressString(ArrayList<Map.Entry<String, Integer>> sortedFreqList) {
+    private void compressString(ArrayList<Map.Entry<String, Integer>> sortedFreqList) {
         List<String> bitList = new ArrayList<String>();
 
         for (Map.Entry<String, Integer> entry : sortedFreqList) {
@@ -106,7 +104,7 @@ public class Encode {
         appendBit(compressedResult, bitList, true);
     }
 
-    private  void appendBit(HashMap<String, String> result, List<String> wordList, boolean up) {
+    private void appendBit(HashMap<String, String> result, List<String> wordList, boolean up) {
 
         String bit = "";
         if (!result.isEmpty()) {
@@ -128,44 +126,56 @@ public class Encode {
         }
     }
 
-    private  void saveEncodedFile(String fileName, String input, int wordLen) throws IOException {
-        String output="";
+    private void saveEncodedFile(URL sourceFilepath) throws IOException, URISyntaxException {
+        DataOutputStream writer = new DataOutputStream(new
+                FileOutputStream(getFileName(sourceFilepath)));
 
-        for (int i = 0; i < input.length(); i += wordLen) {
-            if (input.length() < i+wordLen)
+        //Construct and write header
+        String metaData = decodedTextRoot + compressedResult.toString().trim().replace(" ", "");
+        writer.writeBytes(metaData);
+
+        //iterate through whole input and encode it
+        FileInputStream fs = new FileInputStream(new File(sourceFilepath.toURI()));
+        byte[] fileBuffer = new byte[bufferSize];
+        String remainder = "";
+        int readBytes = 0;
+        while (-1 != (readBytes = fs.read(fileBuffer))) {
+            //convert bits to string
+            String bitString = convertBitsToBitString(fileBuffer, readBytes);
+            remainder = writeEncodedBytesBuffer(bitString, writer, remainder);
+        }
+        //last remainder should be parsed here
+        if (!remainder.equals("")) {
+            while (8 != remainder.length())
+                remainder += '0';
+
+            Byte b = (byte) Integer.parseInt(remainder, 2); //Byte.parseByte("01111111", 2);
+            writer.writeByte(b);
+        }
+        writer.close();
+    }
+
+    //returns remainder
+    private String writeEncodedBytesBuffer(String input, DataOutputStream writer, String remainder) throws IOException {
+        String output = remainder;
+        // encode the input string
+        for (int i = 0; i < input.length(); i += wordLength) {
+            if (input.length() < i + wordLength)
                 break;
 
-            String word = input.substring(i, i + wordLen);
+            String word = input.substring(i, i + wordLength);
             output += compressedResult.get(word);
         }
-
-        ArrayList<Byte> bytes = new ArrayList<Byte>();
-        for (int i = 0; i < output.length(); i+=8)
-        {
+        // convert encoded string symbols to bytes and write them to stream
+        for (int i = 0; i < output.length(); i += 8) {
             //If string % 8 != 0 we have to take the remainder
-            if (output.length() < i+8)
-            {
-                encodedTextRoot = output.substring(i);
-                break;
+            if (output.length() < i + 8) {
+                return output.substring(i);
             }
-
-            String bitString = output.substring(i, i+8);
-            Byte b =(byte)Integer.parseInt(bitString, 2); //Byte.parseByte("01111111", 2);
-            bytes.add(b);
-        }
-
-        DataOutputStream writer = new DataOutputStream(new
-                FileOutputStream(fileName));
-
-        //Constructing header
-        output = encodedTextRoot + "," + decodedTextRoot + compressedResult.toString().trim().replace(" ", "");
-        writer.writeBytes(output);
-
-        //Writing encoded bytes to file
-        for (Byte b : bytes)
+            String bitString = output.substring(i, i + 8);
+            Byte b = (byte) Integer.parseInt(bitString, 2);
             writer.writeByte(b);
-
-        System.out.println(output);
-        writer.close();
+        }
+        return ""; //no reminder
     }
 }
