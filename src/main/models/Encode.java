@@ -26,7 +26,7 @@ public class Encode {
         this.fileExtension = fileExtension;
         this.decodedTextRoot = "";
         if (bufferSize % wordLength != 0)
-            bufferSize += bufferSize % wordLength;
+            bufferSize += (wordLength - (bufferSize % wordLength));
     }
 
     public void encode(URL filepath) {
