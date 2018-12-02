@@ -168,5 +168,4 @@ public class Encode {
         System.out.println(output);
         writer.close();
     }
-
 }
