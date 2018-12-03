@@ -16,12 +16,18 @@ public class Decode {
     private String valueRemainder = "";
     private String codeWordRemainder = "";
     public void decode(URL filepath){
-        try (FileInputStream fs = new FileInputStream(new File(filepath.toURI()));
+        File file;
+        try (FileInputStream fs = new FileInputStream(file = new File(filepath.toURI()));
         ) {
-            File file = new File(filepath.toURI());
-            String fileName = file.getName();
+            String outputFileName = file.getName();
+            outputFileName = outputFileName.toLowerCase();
+            if (outputFileName.contains("encoded"))
+                outputFileName = outputFileName.replace("encoded","Decoded");
+            else
+                outputFileName = "Decoded" + outputFileName;
+
             DataOutputStream writer = new DataOutputStream(new
-                    FileOutputStream(fileName));
+                    FileOutputStream(outputFileName));
 
             boolean metaDataRead = false;
             byte[] fileBuffer = new byte[bufferSize];
