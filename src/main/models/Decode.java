@@ -9,14 +9,19 @@ public class Decode {
 
     private HashMap<String, String> codeTable = new HashMap<String, String>();
     private int bufferSize = 1024;
+
     private boolean isRemainderFromWordRead = false;
     private boolean isReadingValueFromMetaData = true; //if false - we are reading key, not value
+    private boolean isLastBufferToRead = false;
+
     private String remainderFromWord = "";
     private String keyRemainder = "";
     private String valueRemainder = "";
     private String codeWordRemainder = "";
+
     public void decode(URL filepath){
         File file;
+        resetDefaults();
         try (FileInputStream fs = new FileInputStream(file = new File(filepath.toURI()));
         ) {
             String outputFileName = file.getName();
@@ -35,8 +40,10 @@ public class Decode {
             String remainder = "";
             int encodedDataPosition = 0; //position where encoded data starts in the buffer
             while (-1 != (readBytes = fs.read(fileBuffer))) {
+                if(fs.available() == 0)
+                    isLastBufferToRead = true;
+
                 //first read metaData
-                //System.out.println("readBYtes: " + readBytes);
                 if (!metaDataRead){
                     if (-1 == (encodedDataPosition = readMetaData(fileBuffer, readBytes))){
                         // did not finished reading meta data - get another buffer
@@ -49,9 +56,11 @@ public class Decode {
                 metaDataRead = true;
                 //once we done with metadata, do decoding
                 remainder = writeDecodedBytesBuffer(fileBuffer, readBytes, writer, remainder);
+
             }
+            fs.close();
             //add remainder
-            writer.writeBytes(remainderFromWord);
+            writer.close();
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -60,12 +69,23 @@ public class Decode {
         }
 
     }
+
+    private void resetDefaults(){
+        codeTable = new HashMap<String, String>();
+        isRemainderFromWordRead = false;
+        isReadingValueFromMetaData = true; //if false - we are reading key, not value
+        isLastBufferToRead = false;
+        remainderFromWord = "";
+        keyRemainder = "";
+        valueRemainder = "";
+        codeWordRemainder = "";
+    }
     //return -1 - did not finished (buffer did not contained '}'. Can happen if buffer is too small)
     //return n - position where metaData ends
     private int readMetaData(byte[] fileBuffer, int size ){
         int pos = 0;
         if (!isRemainderFromWordRead)
-            pos = readRemainder(fileBuffer, size);
+                pos = readRemainder(fileBuffer, size);
 
         isRemainderFromWordRead = true;
 
@@ -77,7 +97,7 @@ public class Decode {
             if (fileBuffer[i] == '}') {
                 //finished reading metadata
                 codeTable.put(key, value);
-                System.out.println(codeTable);
+                //System.out.println(codeTable);
 
                 return ++i;
             }
@@ -87,7 +107,7 @@ public class Decode {
                 isReadingValueFromMetaData = true;
                 //have a pair
                 codeTable.put(key, value);
-                System.out.println(codeTable);
+                //System.out.println(codeTable);
                 key = "";
                 value = "";
                 keyRemainder = "";
@@ -117,7 +137,7 @@ public class Decode {
         for(int i = 0; i < size; ++i){
             if (fileBuffer[i] == '{')
                 return ++i; //skip {
-            remainderFromWord+=fileBuffer[i];
+            remainderFromWord+=(char)fileBuffer[i];
         }
         return -1;
     }
@@ -131,6 +151,13 @@ public class Decode {
     }
     private String writeDecodedBytesBuffer (byte[] fileBuffer, int readBytes, DataOutputStream writer, String remainder) throws IOException {
         String bitString = convertBitsToBitString(fileBuffer, readBytes);
+        if (isLastBufferToRead)
+        {
+            //get last 8bits - they tell how many zeros were added to the last byte of encoded stream
+            String lastByteString = bitString.substring(bitString.length() - 8);
+            Byte lastByte = (byte) Integer.parseInt(lastByteString, 2);
+            bitString = bitString.substring(0, bitString.length() - 8 - (int)lastByte);
+        }
         String codeWord = codeWordRemainder;
         String bitResult = remainder;
         for(int i = 0; i < bitString.length(); ++i){
@@ -142,6 +169,11 @@ public class Decode {
         }
         codeWordRemainder = codeWord;
         //if at this point we have codeWord not empty, it means buffer ended , so save it as a remainder
+
+        //if it was last buffer add remainder of the original(decoded) string to result and then convert to bytes
+        if(isLastBufferToRead)
+            bitResult += remainderFromWord;
+
         for (int i = 0; i < bitResult.length(); i += 8) {
             //If string % 8 != 0 we have to take the remainder
             if (bitResult.length() < i + 8) {

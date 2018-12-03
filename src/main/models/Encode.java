@@ -29,9 +29,16 @@ public class Encode {
             bufferSize += (wordLength - (bufferSize % wordLength));
     }
 
+    public void setWordLength (int wordLen){
+        wordLength = wordLen;
+        if (bufferSize % wordLength != 0)
+            bufferSize += (wordLength - (bufferSize % wordLength));
+    }
+
     public void encode(URL filepath) {
         try (FileInputStream fs = new FileInputStream(new File(filepath.toURI()));
         ) {
+            resetDefaults();
             byte[] fileBuffer = new byte[bufferSize];
             int readBytes = 0;
             //fill freq map iterating through whole file using buffers
@@ -44,9 +51,9 @@ public class Encode {
             fs.close();
 
             ArrayList<Map.Entry<String, Integer>> sortedFreqList = sortedByFreq();
-            System.out.println(sortedFreqList);
+            //System.out.println(sortedFreqList);
             compressString(sortedFreqList);
-            System.out.println(compressedResult);
+            //System.out.println(compressedResult);
 
             saveEncodedFile(filepath);
 
@@ -55,6 +62,14 @@ public class Encode {
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }
+    }
+
+    private void resetDefaults (){
+        freqMap = new HashMap<String, Integer>();
+        compressedResult = new HashMap<String, String>();
+        decodedTextRoot = "";
+        if (bufferSize % wordLength != 0)
+            bufferSize += (wordLength - (bufferSize % wordLength));
     }
 
     private String convertBitsToBitString(byte[] byteBuffer, int size) {
@@ -73,6 +88,7 @@ public class Encode {
     }
 
     private void getFreqTable(String buffer, int wordLen) {
+        buffer = decodedTextRoot + buffer;
         for (int i = 0; i < buffer.length(); i += wordLen) {
             if (buffer.length() < i + wordLen) {
                 decodedTextRoot = buffer.substring(i);
@@ -145,13 +161,19 @@ public class Encode {
             remainder = writeEncodedBytesBuffer(bitString, writer, remainder);
         }
         //last remainder should be parsed here
+        byte lastByteZeroCount = 0;
         if (!remainder.equals("")) {
             while (8 != remainder.length())
+            {
+                lastByteZeroCount++;
                 remainder += '0';
+            }
 
             Byte b = (byte) Integer.parseInt(remainder, 2); //Byte.parseByte("01111111", 2);
             writer.writeByte(b);
         }
+        writer.writeByte(lastByteZeroCount);
+        fs.close();
         writer.close();
     }
 
@@ -159,13 +181,17 @@ public class Encode {
     private String writeEncodedBytesBuffer(String input, DataOutputStream writer, String remainder) throws IOException {
         String output = remainder;
         // encode the input string
+        boolean isRemainderInputStringLeft = false;
         for (int i = 0; i < input.length(); i += wordLength) {
             if (input.length() < i + wordLength)
+            {   //should only happen at last buffer iteration
                 break;
+            }
 
             String word = input.substring(i, i + wordLength);
             output += compressedResult.get(word);
         }
+
         // convert encoded string symbols to bytes and write them to stream
         for (int i = 0; i < output.length(); i += 8) {
             //If string % 8 != 0 we have to take the remainder

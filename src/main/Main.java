@@ -5,6 +5,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import main.models.Test;
 
 import java.net.URL;
 
@@ -22,6 +23,8 @@ public class Main extends Application {
 
     public static void main(String[] args)
     {
+        Test test = new Test();
+        test.runAllTests();
         launch(args);
     }
 }
