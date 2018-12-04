@@ -18,12 +18,12 @@ public class Decode {
     private String keyRemainder = "";
     private String valueRemainder = "";
     private String codeWordRemainder = "";
+    private long fileSize;
 
     public void decode(URL filepath){
         File file;
         resetDefaults();
-        try (FileInputStream fs = new FileInputStream(file = new File(filepath.toURI()));
-        ) {
+        try (FileInputStream fs = new FileInputStream(file = new File(filepath.toURI()))) {
             String outputFileName = file.getName();
             outputFileName = outputFileName.toLowerCase();
             if (outputFileName.contains("encoded"))
@@ -31,8 +31,9 @@ public class Decode {
             else
                 outputFileName = "Decoded" + outputFileName;
 
+            File decodedFile = new File(outputFileName);
             DataOutputStream writer = new DataOutputStream(new
-                    FileOutputStream(outputFileName));
+                    FileOutputStream(decodedFile));
 
             boolean metaDataRead = false;
             byte[] fileBuffer = new byte[bufferSize];
@@ -61,6 +62,7 @@ public class Decode {
             fs.close();
             //add remainder
             writer.close();
+            fileSize = decodedFile.length();
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -80,8 +82,14 @@ public class Decode {
         valueRemainder = "";
         codeWordRemainder = "";
     }
-    //return -1 - did not finished (buffer did not contained '}'. Can happen if buffer is too small)
-    //return n - position where metaData ends
+
+    /**
+     *
+     * @param fileBuffer
+     * @param size
+     * @return <b>-1</b> if not finished( '}' has not been found)
+     * @return <b>n</b> where meta data ends
+     */
     private int readMetaData(byte[] fileBuffer, int size ){
         int pos = 0;
         if (!isRemainderFromWordRead)
@@ -186,4 +194,5 @@ public class Decode {
     return ""; // no remainder
     }
 
+    public long getFileSize() { return fileSize; }
 }

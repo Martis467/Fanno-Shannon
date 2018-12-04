@@ -16,6 +16,7 @@ public class Encode {
     private int wordLength;
     private String decodedTextRoot; //Saved first
     private int bufferSize = 1024;
+    private long fileSize;
 
     public Encode(int wordLength) {
         this(wordLength, ".txt");
@@ -36,8 +37,7 @@ public class Encode {
     }
 
     public void encode(URL filepath) {
-        try (FileInputStream fs = new FileInputStream(new File(filepath.toURI()));
-        ) {
+        try (FileInputStream fs = new FileInputStream(new File(filepath.toURI()))) {
             resetDefaults();
             byte[] fileBuffer = new byte[bufferSize];
             int readBytes = 0;
@@ -143,6 +143,7 @@ public class Encode {
     }
 
     private void saveEncodedFile(URL sourceFilepath) throws IOException, URISyntaxException {
+        File file = new File(getFileName(sourceFilepath));
         DataOutputStream writer = new DataOutputStream(new
                 FileOutputStream(getFileName(sourceFilepath)));
 
@@ -175,6 +176,7 @@ public class Encode {
         writer.writeByte(lastByteZeroCount);
         fs.close();
         writer.close();
+        this.fileSize = file.length();
     }
 
     //returns remainder
@@ -204,4 +206,6 @@ public class Encode {
         }
         return ""; //no reminder
     }
+
+    public long getFileSize() { return fileSize; }
 }

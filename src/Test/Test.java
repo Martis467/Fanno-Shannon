@@ -1,5 +1,7 @@
-package main.models;
+package Test;
 
+import main.models.Decode;
+import main.models.Encode;
 import sun.nio.ch.IOStatus;
 
 import java.io.BufferedWriter;
@@ -24,9 +26,8 @@ public class Test {
     }
 
     public void compareFilesWithGivenContent(String fileContent) throws IOException {
-        {
             compareFilesWithGivenContent(fileContent, 2, 24);
-        }}
+        }
 
         public void compareFilesWithGivenContent(String fileContent, int wordLenFrom, int wordLenTo) throws IOException {
         BufferedWriter writer = new BufferedWriter(new FileWriter(file.getName()));
