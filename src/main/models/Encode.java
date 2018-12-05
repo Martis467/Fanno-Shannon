@@ -7,7 +7,7 @@ import java.util.*;
 
 public class Encode {
 
-    //Tracks how often a appears in our map
+    //Tracks how often a word appears in our map
     private HashMap<String, Integer> freqMap = new HashMap<String, Integer>();
 
     private HashMap<String, String> codeTable = new HashMap<String, String>();
