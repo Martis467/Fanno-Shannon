@@ -91,7 +91,7 @@ public class MainUI implements Initializable {
 
         //Compare compressed and decompressed file
         long fileSize = Long.parseLong(compressorFile.getText());
-        compressorComparison.setText(String.valueOf(df.format(fileSize/encodedFileSize)));
+        compressorComparison.setText(String.valueOf(df.format((float)fileSize/encodedFileSize)));
         compressorComparison.setVisible(true);
 
     }
@@ -134,7 +134,7 @@ public class MainUI implements Initializable {
 
         //Compare decompressed and compressed file
         long fileSize = Long.parseLong(decompressorFile.getText());
-        decompressorComparison.setText(String.valueOf(df.format(fileSize/decodedFileSize)));
+        decompressorComparison.setText(String.valueOf(df.format((float)fileSize/decodedFileSize)));
         decompressorComparison.setVisible(true);
     }
 
