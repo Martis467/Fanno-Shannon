@@ -12,7 +12,7 @@
 
 <TabPane fx:id="rootPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="301.0" prefWidth="510.0" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/9" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.gui.MainUI">
   <tabs>
-    <Tab text="Compresion">
+    <Tab text="Compression">
       <content>
         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="269.0" prefWidth="510.0">
                    <children>
@@ -31,7 +31,7 @@
                        <Text layoutX="14.0" layoutY="115.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Word Length" />
                        <TextField fx:id="sliderValue" layoutX="462.0" layoutY="98.0" prefHeight="25.0" prefWidth="27.0" />
                        <Button layoutX="408.0" layoutY="219.0" mnemonicParsing="false" onAction="#compressFile" prefHeight="38.0" prefWidth="86.0" text="Compress" />
-                  <Text layoutX="23.0" layoutY="167.0" strokeType="OUTSIDE" strokeWidth="0.0" text="File size:">
+                  <Text layoutX="21.0" layoutY="167.0" strokeType="OUTSIDE" strokeWidth="0.0" text="File size:">
                      <font>
                         <Font size="14.0" />
                      </font>
@@ -51,7 +51,7 @@
                         <Font size="14.0" />
                      </font>
                   </Text>
-                  <Text layoutX="21.0" layoutY="224.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Compression koeficient:">
+                  <Text layoutX="21.0" layoutY="224.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Compression coefficient:">
                      <font>
                         <Font size="14.0" />
                      </font>
@@ -64,7 +64,7 @@
                </children></AnchorPane>
       </content>
     </Tab>
-    <Tab text="Decompresion">
+    <Tab text="Decompression">
       <content>
         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                <children>
