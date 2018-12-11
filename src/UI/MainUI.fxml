@@ -100,7 +100,7 @@
                         <Font size="14.0" />
                      </font>
                   </Text>
-                  <Text layoutX="22.0" layoutY="193.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Decompression koeficient:">
+                  <Text layoutX="22.0" layoutY="193.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Decompression coefficient:">
                      <font>
                         <Font size="14.0" />
                      </font>
